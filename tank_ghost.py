@@ -1,10 +1,11 @@
+from safe_loader import safe_load_image, safe_font
 import pygame
 from ghost import scale_frames
 
 class TankGhost:
     def __init__(self, x, y):
         scale = 2
-        self.idle_sheet = pygame.image.load("assets/Ghost walks.png").convert_alpha()
+        self.idle_sheet = safe_load_image("assets/Ghost walks.png")
         self.idle_frames = scale_frames(self.idle_sheet, 12, 32, 32, scale)
 
         self.frame_index = 0

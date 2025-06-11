@@ -1,38 +1,30 @@
 import pygame
-
-class AnimatedIcon:
-    def __init__(self, path, frame_count, frame_width, frame_height, scale=1):
-        self.sheet = pygame.image.load(path).convert_alpha()
-        self.frames = [
-            pygame.transform.scale(
-                self.sheet.subsurface(pygame.Rect(i * frame_width, 0, frame_width, frame_height)),
-                (frame_width * scale, frame_height * scale)
-            ) for i in range(frame_count)
-        ]
-        self.index = 0
-        self.timer = 0
-        self.speed = 0.15
-
-    def update(self, dt):
-        self.timer += dt
-        if self.timer >= self.speed:
-            self.timer = 0
-            self.index = (self.index + 1) % len(self.frames)
-
-    def get_frame(self):
-        return self.frames[self.index]
-
+from safe_loader import safe_load_image
 
 class ShieldSpell:
-    def __init__(self, player, sprite_path="assets/shiled_spell.png", scale=2):
+    def __init__(self, player, sprite_path="assets/shield_spell.png", scale=2):
         self.player = player
-        self.sheet = pygame.image.load(sprite_path).convert_alpha()
+        
+        # Создаем простые кадры если файл не найден
+        try:
+            self.sheet = safe_load_image(sprite_path, (192, 32))
+            print(f"Shield sprite loaded from: {sprite_path}")
+        except:
+            print(f"Creating fallback shield sprites")
+            # Создаем простые цветные прямоугольники как кадры щита
+            self.sheet = pygame.Surface((192, 32), pygame.SRCALPHA)
+            colors = [(100, 150, 255), (80, 130, 235), (60, 110, 215), 
+                     (40, 90, 195), (20, 70, 175), (100, 100, 100)]
+            for i, color in enumerate(colors):
+                pygame.draw.circle(self.sheet, color, (i * 32 + 16, 16), 12)
+        
         self.frames = [
             pygame.transform.scale(
                 self.sheet.subsurface(pygame.Rect(i * 32, 0, 32, 32)),
                 (32 * scale, 32 * scale)
             ) for i in range(6)
         ]
+        
         self.active = False
         self.appearing = True
         self.current_frame = 0
@@ -50,13 +42,16 @@ class ShieldSpell:
             self.frame_timer = 0
             self.max_shield_hp = max(1, self.player.max_hp // 2)
             self.shield_hp = self.max_shield_hp
+            print(f"Shield activated with {self.shield_hp} HP")
 
     def absorb_damage(self, amount):
         if self.active and not self.appearing and self.shield_hp > 0:
             self.shield_hp -= amount
+            print(f"Shield absorbed {amount} damage, {self.shield_hp} HP remaining")
             if self.shield_hp <= 0:
                 self.shield_hp = 0
                 self.active = False
+                print("Shield destroyed")
             return True
         return False
 

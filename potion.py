@@ -1,8 +1,9 @@
+from safe_loader import safe_load_image, safe_font
 import pygame
 
 class Potion:
     def __init__(self, x, y):
-        self.sheet = pygame.image.load("assets/health_potion.png").convert_alpha()
+        self.sheet = safe_load_image("assets/health_potion.png")
         self.frames = [
             self.sheet.subsurface(pygame.Rect(i * 128, 0, 128, 128))
             for i in range(8)

@@ -1,8 +1,9 @@
+from safe_loader import safe_load_image, safe_font
 import pygame
 
 class LightningSpell:
     def __init__(self, x, y):
-        self.sheet = pygame.image.load("assets/Sprite-sheet.png").convert_alpha()
+        self.sheet = safe_load_image("assets/Sprite-sheet.png")
         self.frames = [
             self.sheet.subsurface(pygame.Rect(i * 256, 0, 256, 128))
             for i in range(4)

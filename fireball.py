@@ -1,8 +1,9 @@
+from safe_loader import safe_load_image, safe_font
 import pygame
 
 class Fireball:
     def __init__(self, x, y, direction):
-        original = pygame.image.load("assets/fireball.png").convert_alpha()
+        original = safe_load_image("assets/fireball.png")
         self.image_original = pygame.transform.scale(original, (32, 32))
         self.image = self.image_original
         self.rect = self.image.get_rect(center=(x, y))

@@ -1,8 +1,9 @@
 import pygame
+from safe_loader import safe_load_image, safe_font
 
 class AnimatedIcon:
     def __init__(self, path, frame_count, frame_width, frame_height, scale=1):
-        self.sheet = pygame.image.load(path).convert_alpha()
+        self.sheet = safe_load_image(path, (frame_width * frame_count, frame_height))
         self.frames = [
             pygame.transform.scale(
                 self.sheet.subsurface(pygame.Rect(i * frame_width, 0, frame_width, frame_height)),
@@ -30,7 +31,7 @@ class Inventory:
         self.frame_height = 128
         self.frame_count = 5
 
-        sheet = pygame.image.load("assets/invent.png").convert_alpha()
+        sheet = safe_load_image("assets/invent.png", (self.frame_width * self.frame_count, self.frame_height))
         self.frames = [
             pygame.transform.scale(
                 sheet.subsurface(pygame.Rect(i * self.frame_width, 0, self.frame_width, self.frame_height)),
@@ -42,6 +43,7 @@ class Inventory:
         self.index = 0
         self.speed = 0.15
 
+        # Данные иконок с безопасными путями
         icon_data = {
             "faerball": ("faerball_inv.png", (36, -22)),
             "molnia": ("molnia_inv.png", (22, -22)),
@@ -52,10 +54,16 @@ class Inventory:
 
         self.slots = list(icon_data.keys())
 
-        self.icons = {
-            name: AnimatedIcon(f"assets/{filename}", 5, 128, 128, scale=0.9 * scale)
-            for name, (filename, _) in icon_data.items()
-        }
+        # Создаем иконки с fallback
+        self.icons = {}
+        for name, (filename, _) in icon_data.items():
+            try:
+                self.icons[name] = AnimatedIcon(f"assets/{filename}", 5, 128, 128, scale=0.9 * scale)
+                print(f"Loaded icon: {name}")
+            except Exception as e:
+                print(f"Failed to load icon {name}: {e}")
+                # Создаем простую цветную иконку как fallback
+                self.icons[name] = self.create_fallback_icon(name, scale)
 
         self.icon_offsets = {
             name: offset for name, (_, offset) in icon_data.items()
@@ -75,6 +83,37 @@ class Inventory:
         }
         self.max_count = 5
 
+    def create_fallback_icon(self, icon_name, scale):
+        """Создает простую цветную иконку как fallback"""
+        colors = {
+            "faerball": (255, 100, 0),    # Оранжевый
+            "molnia": (255, 255, 0),      # Желтый
+            "shield": (0, 100, 255),      # Синий
+            "hilka": (255, 0, 100),       # Розовый
+            "mana": (100, 0, 255)         # Фиолетовый
+        }
+        
+        color = colors.get(icon_name, (100, 100, 100))
+        
+        # Создаем простую иконку
+        class FallbackIcon:
+            def __init__(self, color, scale):
+                self.frame = pygame.Surface((int(128 * 0.9 * scale), int(128 * 0.9 * scale)), pygame.SRCALPHA)
+                pygame.draw.circle(self.frame, color, 
+                                 (int(64 * 0.9 * scale), int(64 * 0.9 * scale)), 
+                                 int(32 * 0.9 * scale))
+                pygame.draw.circle(self.frame, (255, 255, 255), 
+                                 (int(64 * 0.9 * scale), int(64 * 0.9 * scale)), 
+                                 int(32 * 0.9 * scale), 2)
+            
+            def update(self, dt):
+                pass
+            
+            def get_frame(self):
+                return self.frame
+        
+        return FallbackIcon(color, scale)
+
     def add_item(self, item_type):
         if item_type in self.item_counts:
             if self.item_counts[item_type] < self.max_count:
@@ -93,7 +132,8 @@ class Inventory:
             self.index = (self.index + 1) % len(self.frames)
 
         for icon in self.icons.values():
-            icon.update(dt)
+            if hasattr(icon, 'update'):
+                icon.update(dt)
 
     def draw(self, surface):
         screen_w, screen_h = surface.get_size()
@@ -119,12 +159,15 @@ class Inventory:
                     surface.blit(frame_icon, (ix, iy))
 
                     if name in self.item_counts:
-                        font = pygame.font.Font("assets/PressStart2P-Regular.ttf", int(6 * self.scale))
-                        value = str(self.item_counts[name])
-                        spacing = 1
-                        start_x = ix + 150
-                        text_y = iy + 175
+                        try:
+                            font = safe_font(int(6 * self.scale))
+                            value = str(self.item_counts[name])
+                            spacing = 1
+                            start_x = ix + 150
+                            text_y = iy + 175
 
-                        for j, digit in enumerate(value):
-                            digit_surface = font.render(digit, True, (255, 255, 255))
-                            surface.blit(digit_surface, (start_x + j * spacing, text_y))
+                            for j, digit in enumerate(value):
+                                digit_surface = font.render(digit, True, (255, 255, 255))
+                                surface.blit(digit_surface, (start_x + j * spacing, text_y))
+                        except Exception as e:
+                            print(f"Error rendering item count: {e}")

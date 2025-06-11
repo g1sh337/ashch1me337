@@ -1,3 +1,4 @@
+from safe_loader import safe_load_image, safe_font
 import pygame
 
 def scale_frames(sheet, frame_count, frame_w, frame_h, scale):
@@ -13,8 +14,8 @@ class Ghost:
     def __init__(self, x, y):
         scale = 2
 
-        self.spawn_sheet = pygame.image.load("assets/MiniGhost_Spawn.png").convert_alpha()
-        self.idle_sheet = pygame.image.load("assets/MiniGhost_Idle.png").convert_alpha()
+        self.spawn_sheet = safe_load_image("assets/MiniGhost_Spawn.png")
+        self.idle_sheet = safe_load_image("assets/MiniGhost_Idle.png")
 
         self.spawn_frames = scale_frames(self.spawn_sheet, 10, 32, 32, scale)
         self.idle_frames = scale_frames(self.idle_sheet, 8, 32, 32, scale)

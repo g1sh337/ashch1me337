@@ -1,3 +1,4 @@
+from safe_loader import safe_load_image, safe_font
 import pygame
 from ghost import scale_frames
 from damage_number import DamageNumber
@@ -5,7 +6,7 @@ from damage_number import DamageNumber
 class ShooterGhost:
     def __init__(self, x, y):
         scale = 2
-        self.idle_sheet = pygame.image.load("assets/ghost walks 2.png").convert_alpha()
+        self.idle_sheet = safe_load_image("assets/ghost walks 2.png")
         self.idle_frames = scale_frames(self.idle_sheet, 12, 32, 32, scale)
 
         self.frame_index = 0
@@ -65,14 +66,14 @@ class ShooterProjectile:
         try:
             if abs(self.direction.x) > abs(self.direction.y):
                 if self.direction.x > 0:
-                    self.image = pygame.image.load("assets/eye_right.png").convert_alpha()
+                    self.image = safe_load_image("assets/eye_right.png")
                 else:
-                    self.image = pygame.image.load("assets/eye_left.png").convert_alpha()
+                    self.image = safe_load_image("assets/eye_left.png")
             else:
                 if self.direction.y > 0:
-                    self.image = pygame.image.load("assets/eye_down.png").convert_alpha()
+                    self.image = safe_load_image("assets/eye_down.png")
                 else:
-                    self.image = pygame.image.load("assets/eye_up.png").convert_alpha()
+                    self.image = safe_load_image("assets/eye_up.png")
         except Exception as e:
             print("Failed to load eye projectile sprite:", e)
             self.image = pygame.Surface((8, 8))
