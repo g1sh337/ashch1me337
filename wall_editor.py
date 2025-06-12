@@ -65,7 +65,7 @@ while running:
     camera_offset.x = max(0, min(camera_offset.x, bg_width - screen.get_width()))
     camera_offset.y = max(0, min(camera_offset.y, bg_height - screen.get_height()))
 
-    # Отрисовка
+    
     screen.blit(background, (-camera_offset.x, -camera_offset.y))
 
     for wall in walls:

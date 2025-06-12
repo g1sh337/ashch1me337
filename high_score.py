@@ -45,7 +45,7 @@ class HighScoreManager:
         
         self.scores.append(new_score)
         
-        # Sort by descending score
+        
         self.scores.sort(key=lambda x: x['score'], reverse=True)
         
         # Keep only top-N

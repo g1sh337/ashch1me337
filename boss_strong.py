@@ -230,7 +230,7 @@ class BossStrong:
             bar_y = 20
             surface.blit(hp_bar_image, (bar_x, bar_y))
             
-            # Показываем уровень босса
+            
             if hasattr(pygame.font, 'Font'):
                 try:
                     font = safe_font(10)

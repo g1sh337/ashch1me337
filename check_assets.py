@@ -19,7 +19,7 @@ if os.path.exists('assets'):
 else:
     print("✗ Папка assets НЕ НАЙДЕНА!")
 
-# Проверяем критически важные файлы
+
 critical_files = [
     'assets/background.png',
     'assets/Interface.png', 

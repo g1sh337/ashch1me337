@@ -9,10 +9,10 @@ class Fireball:
         self.rect = self.image.get_rect(center=(x, y))
         self.direction = direction.normalize()
         self.speed = 500
-        self.lifetime = 2  # секунды
+        self.lifetime = 2  
         self.timer = 0
 
-        # Поворачиваем по направлению
+        
         angle = -self.direction.angle_to(pygame.Vector2(1, 0))
         self.image = pygame.transform.rotate(self.image_original, angle)
         self.rect = self.image.get_rect(center=self.rect.center)

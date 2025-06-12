@@ -43,7 +43,7 @@ class Player:
     def __init__(self, x, y):
         scale = 2
 
-        # Безопасная загрузка всех спрайтов
+        
         self.idle_right_sheet = safe_load_image("assets/mag stay sprite.png", (320, 32))
         self.idle_left_sheet = safe_load_image("assets/image_2025-05-09_17-50-33.png", (320, 32))
         self.shoot_right_sheet = safe_load_image("assets/mag shoot.png", (320, 32))

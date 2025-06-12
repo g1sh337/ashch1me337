@@ -8,7 +8,7 @@ class BossPepe:
         self.x = x
         self.y = y
         self.rect = pygame.Rect(x, y, 32, 32)
-        self.power_level = power_level  # Уровень силы босса
+        self.power_level = power_level  
 
         self.sheet_right = safe_load_image("assets/boss_pepe_walk_right.png")
         self.sheet_left = safe_load_image("assets/boss_pepe_walk_left.png")
@@ -16,7 +16,7 @@ class BossPepe:
         self.summon_left = safe_load_image("assets/boss_pepe_summon_left.png")
 
         self.scale = 2
-        self.speed = 100 + (power_level - 1) * 15  # Увеличиваем скорость с уровнем
+        self.speed = 100 + (power_level - 1) * 15  
         self.facing = "right"
         self.frames = self.load_frames(self.sheet_right)
         self.summon_frames = self.load_frames(self.summon_right)
@@ -25,13 +25,13 @@ class BossPepe:
         self.anim_speed = 0.15
 
         self.mode = "walk"
-        # Кулдаун призыва зависит от уровня силы
+        
         self.summon_cooldown = max(1.5, 3.5 - (power_level - 1) * 0.4)
         self.summon_timer = 0
         
-        # Количество призываемых призраков зависит от уровня силы
+       
         self.ghosts_per_summon = power_level
-        self.max_ghosts_summoned = 15 + power_level * 5  # Увеличиваем лимит
+        self.max_ghosts_summoned = 15 + power_level * 5  
 
         self.active = True
         self.ghosts_killed = 0
@@ -41,7 +41,7 @@ class BossPepe:
 
         self.running_away = False
         
-        # Добавляем здоровье боссу на высоких уровнях
+        
         if power_level > 3:
             self.has_hp = True
             self.max_hp = (power_level - 3) * 20
@@ -49,7 +49,7 @@ class BossPepe:
         else:
             self.has_hp = False
 
-        # Урон который наносит босс
+        
         self.damage = 3 + power_level
 
         print(f"BossPepe spawned! Level: {power_level}, Speed: {self.speed}, Ghosts per summon: {self.ghosts_per_summon}")
@@ -76,7 +76,7 @@ class BossPepe:
         if not self.active:
             return
 
-        # Проверяем условие побега (по убитым призракам или урону)
+        
         if ((not self.has_hp and self.ghosts_killed >= self.max_ghosts_summoned) or 
             (self.has_hp and self.hp <= 0)):
             self.running_away = True
@@ -89,7 +89,7 @@ class BossPepe:
             self.anim_index = (self.anim_index + 1) % len(self.frames)
 
         if self.running_away:
-            # Убегает быстрее
+            
             escape_speed = self.speed * 1.5
             self.rect.x += escape_speed * dt
             if self.rect.x > 2000:
@@ -104,12 +104,12 @@ class BossPepe:
                 self.summoning = False
                 self.summon_time = 0
                 
-                # Призываем призраков в зависимости от уровня силы
+                
                 for _ in range(self.ghosts_per_summon):
                     ghost_x = self.rect.centerx + random.randint(-80, 80)
                     ghost_y = self.rect.centery + random.randint(-80, 80)
                     
-                    # На высоких уровнях может призывать разные типы призраков
+                    
                     if self.power_level >= 3:
                         from tank_ghost import TankGhost
                         from shooter_ghost import ShooterGhost
@@ -125,10 +125,10 @@ class BossPepe:
             self.mode = "summon"
         else:
             self.mode = "walk"
-            # Движение к игроку (но держится на расстоянии)
+            
             direction = pygame.Vector2(player.rect.centerx - self.rect.centerx,
                                        player.rect.centery - self.rect.centery)
-            target_distance = 120 + self.power_level * 10  # Дистанция зависит от уровня
+            target_distance = 120 + self.power_level * 10  
             
             if direction.length() > target_distance:
                 direction.normalize_ip()

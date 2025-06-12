@@ -9,13 +9,13 @@ def create_damage_sprite(damage_text, filename):
     frame_height = 32
     frame_count = 8
     
-    # Создаем поверхность для всех кадров
+    
     sprite_sheet = pygame.Surface((frame_width * frame_count, frame_height), pygame.SRCALPHA)
     
     font = pygame.font.Font(None, 20)
     
     for i in range(frame_count):
-        # Создаем кадр
+        
         frame = pygame.Surface((frame_width, frame_height), pygame.SRCALPHA)
         
         # Эффект появления и исчезания
@@ -47,11 +47,11 @@ def create_damage_sprite(damage_text, filename):
     pygame.image.save(sprite_sheet, f"assets/{filename}")
     print(f"Created: assets/{filename}")
 
-# Создаем папку assets если её нет
+
 if not os.path.exists('assets'):
     os.makedirs('assets')
 
-# Создаем спрайты урона
+
 create_damage_sprite("1HP", "1HP.png")
 create_damage_sprite("2HP", "2HP.png")
 

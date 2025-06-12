@@ -7,7 +7,7 @@ class PauseMenu:
         self.screen_width = screen_width
         self.screen_height = screen_height
         
-        # Pause menu options
+        
         self.pause_options = [
             "Continue",
             "Settings", 

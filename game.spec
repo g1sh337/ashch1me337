@@ -2,7 +2,7 @@
 
 block_cipher = None
 
-# Анализ всех файлов игры
+
 a = Analysis(
     ['main.py'],  # Главный файл игры
     pathex=[],

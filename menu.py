@@ -10,7 +10,7 @@ class MainMenu:
         self.screen_width = screen_width
         self.screen_height = screen_height
         
-        # Create nature background
+        
         self.create_background()
         
         # Load music

@@ -86,7 +86,7 @@ class Inventory:
     def create_fallback_icon(self, icon_name, scale):
         """Создает простую цветную иконку как fallback"""
         colors = {
-            "faerball": (255, 100, 0),    # Оранжевый
+            "faerball": (255, 100, 0),    
             "molnia": (255, 255, 0),      # Желтый
             "shield": (0, 100, 255),      # Синий
             "hilka": (255, 0, 100),       # Розовый

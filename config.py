@@ -132,7 +132,7 @@ def get_optimal_resolution():
     info = pygame.display.Info()
     monitor_w, monitor_h = info.current_w, info.current_h
     
-    # Ищем наибольшее подходящее разрешение (80% от размера монитора)
+    
     target_w = int(monitor_w * 0.8)
     target_h = int(monitor_h * 0.8)
     

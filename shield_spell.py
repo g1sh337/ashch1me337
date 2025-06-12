@@ -5,13 +5,13 @@ class ShieldSpell:
     def __init__(self, player, sprite_path="assets/shield_spell.png", scale=2):
         self.player = player
         
-        # Создаем простые кадры если файл не найден
+        
         try:
             self.sheet = safe_load_image(sprite_path, (192, 32))
             print(f"Shield sprite loaded from: {sprite_path}")
         except:
             print(f"Creating fallback shield sprites")
-            # Создаем простые цветные прямоугольники как кадры щита
+            
             self.sheet = pygame.Surface((192, 32), pygame.SRCALPHA)
             colors = [(100, 150, 255), (80, 130, 235), (60, 110, 215), 
                      (40, 90, 195), (20, 70, 175), (100, 100, 100)]

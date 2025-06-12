@@ -11,7 +11,7 @@ class ManaMushroom:
         self.frame_index = 0
         self.animation_speed = 0.15
         self.timer = 0
-        self.lifetime = 25  # секунд
+        self.lifetime = 25  
         self.rect = self.frames[0].get_rect(topleft=(x, y))
         self.active = True
 

@@ -613,7 +613,7 @@ def start_game_loop(screen, clock):
                             fireballs.remove(fireball)
                         break
 
-            # Potion spawning
+            
             if score - previous_potion_score >= 100 and (not potion or not potion.active):
                 previous_potion_score = score
                 attempts = 0

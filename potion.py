@@ -12,7 +12,7 @@ class Potion:
         self.animation_speed = 0.15
         self.timer = 0
         self.lifetime = 25  # секунд
-        self.rect = pygame.Rect(x, y, 64, 64)  # увеличенная зона подбора
+        self.rect = pygame.Rect(x, y, 64, 64)  
         self.active = True
 
     def update(self, dt):

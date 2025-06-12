@@ -191,7 +191,7 @@ class Interface:
                 "1/2 - Use Items"
             ]
             
-            # Позиционируем под интерфейсом (учитываем высоту интерфейса)
+           
             start_y = self.interface_y + self.interface_img.get_height() + 10
             
             for i, control in enumerate(controls):

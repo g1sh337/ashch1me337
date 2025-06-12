@@ -5,7 +5,7 @@ class WorldManager:
         self.screen_width = screen_width
         self.screen_height = screen_height
         
-        # Загружаем оригинальный фон
+        
         self.original_background = pygame.image.load(background_path).convert()
         self.original_width, self.original_height = self.original_background.get_size()
         

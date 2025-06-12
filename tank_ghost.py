@@ -13,7 +13,7 @@ class TankGhost:
         self.animation_timer = 0
 
         self.rect = self.idle_frames[0].get_rect(center=(x, y))
-        self.speed = 50  # медленный
+        self.speed = 50  
         self.hp = 5
         self.attack_cooldown = 0
 

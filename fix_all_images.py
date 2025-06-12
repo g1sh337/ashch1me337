@@ -1,7 +1,7 @@
 import os
 import re
 
-# Создаем safe_loader.py если его нет
+
 safe_loader_content = '''import pygame
 import sys
 import os

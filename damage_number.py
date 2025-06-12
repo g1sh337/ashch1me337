@@ -3,16 +3,16 @@ from safe_loader import safe_load_image
 
 class DamageNumber:
     def __init__(self, x, y, sprite_path="1HP.png"):
-        # Добавляем путь к assets если его нет
+        
         if not sprite_path.startswith("assets/"):
             sprite_path = f"assets/{sprite_path}"
             
-        # Безопасная загрузка с fallback
-        self.sheet = safe_load_image(sprite_path, (320, 32))  # Примерный размер для 10 кадров
         
-        # Определяем количество кадров
+        self.sheet = safe_load_image(sprite_path, (320, 32))  
+        
+        
         sheet_width = self.sheet.get_width()
-        frame_width = 32  # Предполагаемая ширина кадра
+        frame_width = 32  
         frame_count = max(1, sheet_width // frame_width)  # Минимум 1 кадр
         
         # Создаем кадры
@@ -61,7 +61,7 @@ class DamageNumber:
 
     def update(self, dt):
         self.timer += dt
-        self.offset -= 20 * dt  # Движение вверх
+        self.offset -= 20 * dt  
         
         if self.timer >= self.animation_speed:
             self.timer = 0
