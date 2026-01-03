@@ -2,5 +2,11 @@
   "buildCommand": "python -m pygbag --build main_web.py",
   "outputDirectory": ".",
   "installCommand": "pip install pygbag pygame-ce",
-  "framework": null
+  "framework": null,
+  "routes": [
+    {
+      "src": "/build/web/(.*)",
+      "dest": "/build/web/$1"
+    }
+  ]
 }
