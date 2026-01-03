@@ -1,4 +1,4 @@
-# menu.py - Complete menu with nature background
+# menu.py - Complete menu with nature background and Solana gradient title
 import pygame
 import sys
 import os
@@ -9,7 +9,6 @@ class MainMenu:
     def __init__(self, screen_width, screen_height):
         self.screen_width = screen_width
         self.screen_height = screen_height
-        
         
         self.create_background()
         
@@ -34,14 +33,81 @@ class MainMenu:
         self.gray = (128, 128, 128)
         self.green = (100, 255, 150)
         
+        # Solana gradient colors
+        self.solana_blue = (0, 255, 163)      # Solana mint green-blue
+        self.solana_purple = (220, 31, 255)   # Solana purple
+        self.solana_cyan = (20, 242, 251)     # Solana cyan
+        
         # Animation
         self.title_bounce = 0
+        self.gradient_shift = 0  # For animated gradient
         self.firefly_timer = 0
         self.fireflies = []
         self.create_fireflies()
         
         # Menu state
         self.state = "main"  # main, high_scores
+
+    def create_solana_gradient_text(self, text, font):
+        """Create text with animated Solana gradient"""
+        import math
+        
+        # Create cycling gradient effect
+        shift_amount = int(self.gradient_shift * 50) % 200
+        
+        # Use three-color Solana gradient
+        text_surface = font.render(text, True, (255, 255, 255))
+        width, height = text_surface.get_size()
+        
+        # Create gradient surface
+        gradient_surface = pygame.Surface((width, height))
+        
+        for x in range(width):
+            # Create cycling rainbow effect
+            ratio = (x + shift_amount) / width * 2  # Double for more color cycling
+            
+            if ratio <= 1.0:
+                # First half: cyan to blue to purple
+                if ratio <= 0.5:
+                    # Cyan to blue
+                    blend_ratio = ratio * 2
+                    r = int(self.solana_cyan[0] * (1 - blend_ratio) + self.solana_blue[0] * blend_ratio)
+                    g = int(self.solana_cyan[1] * (1 - blend_ratio) + self.solana_blue[1] * blend_ratio)
+                    b = int(self.solana_cyan[2] * (1 - blend_ratio) + self.solana_blue[2] * blend_ratio)
+                else:
+                    # Blue to purple
+                    blend_ratio = (ratio - 0.5) * 2
+                    r = int(self.solana_blue[0] * (1 - blend_ratio) + self.solana_purple[0] * blend_ratio)
+                    g = int(self.solana_blue[1] * (1 - blend_ratio) + self.solana_purple[1] * blend_ratio)
+                    b = int(self.solana_blue[2] * (1 - blend_ratio) + self.solana_purple[2] * blend_ratio)
+            else:
+                # Second half: purple back to cyan
+                ratio = ratio - 1.0
+                r = int(self.solana_purple[0] * (1 - ratio) + self.solana_cyan[0] * ratio)
+                g = int(self.solana_purple[1] * (1 - ratio) + self.solana_cyan[1] * ratio)
+                b = int(self.solana_purple[2] * (1 - ratio) + self.solana_cyan[2] * ratio)
+            
+            # ИСПРАВЛЕНИЕ: Убеждаемся что значения в пределах 0-255
+            r = max(0, min(255, r))
+            g = max(0, min(255, g))
+            b = max(0, min(255, b))
+            
+            # Draw vertical line with this color
+            pygame.draw.line(gradient_surface, (r, g, b), (x, 0), (x, height))
+        
+        # Apply gradient to text
+        final_surface = pygame.Surface((width, height))
+        final_surface.set_colorkey((0, 0, 0))
+        
+        for x in range(width):
+            for y in range(height):
+                try:
+                    if text_surface.get_at((x, y))[3] > 0:  # If pixel is not transparent
+                        final_surface.set_at((x, y), gradient_surface.get_at((x, y)))
+                except IndexError:
+                    continue  # Skip if coordinates are out of bounds
+        
+        return final_surface
         
     def create_background(self):
         """Create nature/forest background"""
@@ -72,7 +138,7 @@ class MainMenu:
             
             # Yellow-green fireflies
             if random.random() < 0.7:
-                color = (200, 255, 100)  # Yellow-green
+                color = (150, 200, 100)  # Yellow-green
             else:
                 color = (100, 255, 200)  # Turquoise
             
@@ -196,6 +262,7 @@ class MainMenu:
     def update(self, dt):
         """Update menu animations"""
         self.title_bounce += dt * 2
+        self.gradient_shift += dt * 0.5  # Slow gradient animation
         self.firefly_timer += dt
         self.update_fireflies(dt)
     
@@ -219,25 +286,35 @@ class MainMenu:
                              (int(firefly['x']), int(firefly['y'])), 
                              firefly['size'] + 2)
         
-        # Draw title with bounce effect
-        title_text = "THE LEGEND of ASHCHIME"
+        # Draw title with Solana gradient and bounce effect
+        title_text = "a1lon9 vs gays"
         title_y_offset = int(math.sin(self.title_bounce) * 10)
-        title_surface = self.font_large.render(title_text, True, self.yellow)
-        title_rect = title_surface.get_rect(center=(self.screen_width // 2, 150 + title_y_offset))
         
-        # Add nature-themed glow effect to title
-        for offset in [(2, 2), (-2, 2), (2, -2), (-2, -2)]:
-            glow_surface = self.font_large.render(title_text, True, self.green)
-            glow_rect = title_rect.copy()
-            glow_rect.x += offset[0]
-            glow_rect.y += offset[1]
-            surface.blit(glow_surface, glow_rect)
+        # Create gradient title
+        try:
+            title_gradient_surface = self.create_solana_gradient_text(title_text, self.font_large)
+            title_rect = title_gradient_surface.get_rect(center=(self.screen_width // 2, 150 + title_y_offset))
+            
+            # Add glow effect with Solana colors
+            for offset in [(3, 3), (-3, 3), (3, -3), (-3, -3), (0, 4), (0, -4), (4, 0), (-4, 0)]:
+                glow_surface = self.font_large.render(title_text, True, (20, 100, 150))  # Dark blue glow
+                glow_rect = title_rect.copy()
+                glow_rect.x += offset[0]
+                glow_rect.y += offset[1]
+                surface.blit(glow_surface, glow_rect)
+            
+            # Draw the gradient title
+            surface.blit(title_gradient_surface, title_rect)
+        except Exception as e:
+            # Fallback to simple colored title
+            print(f"Gradient title error: {e}")
+            title_surface = self.font_large.render(title_text, True, self.solana_cyan)
+            title_rect = title_surface.get_rect(center=(self.screen_width // 2, 150 + title_y_offset))
+            surface.blit(title_surface, title_rect)
         
-        surface.blit(title_surface, title_rect)
-        
-        # Draw subtitle
+        # Draw subtitle with slight Solana accent
         subtitle_text = "Enhanced Edition"
-        subtitle_surface = self.font_medium.render(subtitle_text, True, self.white)
+        subtitle_surface = self.font_medium.render(subtitle_text, True, self.solana_cyan)
         subtitle_rect = subtitle_surface.get_rect(center=(self.screen_width // 2, 200))
         surface.blit(subtitle_surface, subtitle_rect)
         
@@ -246,16 +323,20 @@ class MainMenu:
         option_spacing = 80
         
         for i, option in enumerate(self.menu_options):
-            color = self.yellow if i == self.selected_option else self.white
+            if i == self.selected_option:
+                # Selected option gets Solana color
+                option_surface = self.font_medium.render(option, True, self.solana_cyan)
+            else:
+                # Unselected options are white
+                option_surface = self.font_medium.render(option, True, self.white)
             
             # Add selection indicator
             if i == self.selected_option:
                 indicator = "🌿"  # Nature theme
-                indicator_surface = self.font_medium.render(indicator, True, self.green)
+                indicator_surface = self.font_medium.render(indicator, True, self.solana_blue)
                 indicator_rect = indicator_surface.get_rect(center=(self.screen_width // 2 - 120, start_y + i * option_spacing))
                 surface.blit(indicator_surface, indicator_rect)
             
-            option_surface = self.font_medium.render(option, True, color)
             option_rect = option_surface.get_rect(center=(self.screen_width // 2, start_y + i * option_spacing))
             surface.blit(option_surface, option_rect)
         
@@ -267,7 +348,11 @@ class MainMenu:
     
     def draw_high_scores(self, surface):
         """Draw high scores screen"""
-        from high_score import HighScoreManager
+        try:
+            from high_score import HighScoreManager
+        except ImportError:
+            # Fallback если модуль не найден
+            HighScoreManager = None
         
         # Draw dimmed background
         surface.blit(self.background, (0, 0))
@@ -285,58 +370,71 @@ class MainMenu:
         overlay.fill((0, 0, 0))
         surface.blit(overlay, (0, 0))
         
-        # High scores title
-        title_surface = self.font_large.render("🏆 HIGH SCORES 🏆", True, self.yellow)
-        title_rect = title_surface.get_rect(center=(self.screen_width // 2, 100))
-        surface.blit(title_surface, title_rect)
+        # High scores title with Solana gradient
+        title_text = "🏆 HIGH SCORES 🏆"
+        try:
+            title_gradient_surface = self.create_solana_gradient_text(title_text, self.font_large)
+            title_rect = title_gradient_surface.get_rect(center=(self.screen_width // 2, 100))
+            surface.blit(title_gradient_surface, title_rect)
+        except Exception as e:
+            # Fallback to simple colored title
+            title_surface = self.font_large.render(title_text, True, self.solana_cyan)
+            title_rect = title_surface.get_rect(center=(self.screen_width // 2, 100))
+            surface.blit(title_surface, title_rect)
         
         # Load and display scores
-        try:
-            score_manager = HighScoreManager()
-            top_scores = score_manager.get_top_scores(10)
-            
-            if top_scores:
-                start_y = 180
-                for i, record in enumerate(top_scores):
-                    # Medal/rank
-                    if i == 0:
-                        medal = "🥇"
-                        color = (255, 255, 0)  # Gold
-                    elif i == 1:
-                        medal = "🥈"
-                        color = (192, 192, 192)  # Silver
-                    elif i == 2:
-                        medal = "🥉"
-                        color = (205, 127, 50)  # Bronze
-                    else:
-                        medal = f"{i + 1}."
-                        color = (200, 200, 200)  # Regular
-                    
-                    # Score line
-                    score_text = f"{medal} {record['score']} pts"
-                    details_text = f"Level {record['level']} • Wave {record['wave']} • {record['date']}"
-                    
-                    score_surface = self.font_medium.render(score_text, True, color)
-                    details_surface = self.font_small.render(details_text, True, self.gray)
-                    
-                    score_rect = score_surface.get_rect(center=(self.screen_width // 2, start_y + i * 45))
-                    details_rect = details_surface.get_rect(center=(self.screen_width // 2, start_y + i * 45 + 20))
-                    
-                    surface.blit(score_surface, score_rect)
-                    surface.blit(details_surface, details_rect)
-            else:
-                no_scores_text = "No high scores yet!"
-                no_scores_surface = self.font_medium.render(no_scores_text, True, self.gray)
-                no_scores_rect = no_scores_surface.get_rect(center=(self.screen_width // 2, 300))
-                surface.blit(no_scores_surface, no_scores_rect)
+        if HighScoreManager:
+            try:
+                score_manager = HighScoreManager()
+                top_scores = score_manager.get_top_scores(10)
                 
-                hint_text = "Play the game to set your first record!"
-                hint_surface = self.font_small.render(hint_text, True, self.gray)
-                hint_rect = hint_surface.get_rect(center=(self.screen_width // 2, 330))
-                surface.blit(hint_surface, hint_rect)
-        
-        except Exception as e:
-            error_text = "Error loading high scores"
+                if top_scores:
+                    start_y = 180
+                    for i, record in enumerate(top_scores):
+                        # Medal/rank with Solana accents
+                        if i == 0:
+                            medal = "🥇"
+                            color = self.solana_cyan  # Solana cyan for first place
+                        elif i == 1:
+                            medal = "🥈"
+                            color = self.solana_blue  # Solana blue for second
+                        elif i == 2:
+                            medal = "🥉"
+                            color = self.solana_purple  # Solana purple for third
+                        else:
+                            medal = f"{i + 1}."
+                            color = (200, 200, 200)  # Regular
+                        
+                        # Score line
+                        score_text = f"{medal} {record['score']} pts"
+                        details_text = f"Level {record['level']} • Wave {record['wave']} • {record['date']}"
+                        
+                        score_surface = self.font_medium.render(score_text, True, color)
+                        details_surface = self.font_small.render(details_text, True, self.gray)
+                        
+                        score_rect = score_surface.get_rect(center=(self.screen_width // 2, start_y + i * 45))
+                        details_rect = details_surface.get_rect(center=(self.screen_width // 2, start_y + i * 45 + 20))
+                        
+                        surface.blit(score_surface, score_rect)
+                        surface.blit(details_surface, details_rect)
+                else:
+                    no_scores_text = "No high scores yet!"
+                    no_scores_surface = self.font_medium.render(no_scores_text, True, self.gray)
+                    no_scores_rect = no_scores_surface.get_rect(center=(self.screen_width // 2, 300))
+                    surface.blit(no_scores_surface, no_scores_rect)
+                    
+                    hint_text = "Play the game to set your first record!"
+                    hint_surface = self.font_small.render(hint_text, True, self.gray)
+                    hint_rect = hint_surface.get_rect(center=(self.screen_width // 2, 330))
+                    surface.blit(hint_surface, hint_rect)
+            
+            except Exception as e:
+                error_text = "Error loading high scores"
+                error_surface = self.font_medium.render(error_text, True, (255, 100, 100))
+                error_rect = error_surface.get_rect(center=(self.screen_width // 2, 300))
+                surface.blit(error_surface, error_rect)
+        else:
+            error_text = "High score system not available"
             error_surface = self.font_medium.render(error_text, True, (255, 100, 100))
             error_rect = error_surface.get_rect(center=(self.screen_width // 2, 300))
             surface.blit(error_surface, error_rect)

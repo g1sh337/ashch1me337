@@ -2,34 +2,51 @@ from safe_loader import safe_load_image, safe_font
 import pygame
 import random
 from ghost import Ghost
+import math
+
+def load_single_image(image_path, target_size=(128, 128), scale=1):
+    """
+    Загружает одиночное изображение и масштабирует его
+    """
+    try:
+        image = safe_load_image(image_path, target_size)
+        scaled_size = (int(target_size[0] * scale), int(target_size[1] * scale))
+        return pygame.transform.scale(image, scaled_size)
+    except Exception as e:
+        print(f"Error loading image {image_path}: {e}")
+        scaled_size = (int(target_size[0] * scale), int(target_size[1] * scale))
+        fallback = pygame.Surface(scaled_size)
+        fallback.fill((255, 255, 0))  # Желтый цвет для Босс Пепе
+        return fallback
 
 class BossPepe:
     def __init__(self, x, y, power_level=1):
         self.x = x
         self.y = y
-        self.rect = pygame.Rect(x, y, 32, 32)
+        self.rect = pygame.Rect(x, y, 64, 64)  # Увеличиваем размер коллизии для босса
         self.power_level = power_level  
 
-        self.sheet_right = safe_load_image("assets/boss_pepe_walk_right.png")
-        self.sheet_left = safe_load_image("assets/boss_pepe_walk_left.png")
-        self.summon_right = safe_load_image("assets/boss_pepe_summon_right.png")
-        self.summon_left = safe_load_image("assets/boss_pepe_summon_left.png")
+        # НОВЫЙ КОД: Загружаем отдельные изображения
+        self.image_left = load_single_image("assets/boss_pepe_left.png")   # Смотрит влево
+        self.image_right = load_single_image("assets/boss_pepe_right.png") # Смотрит вправо
+        
+        # Текущее изображение и состояние
+        self.current_image = self.image_right
+        self.facing = "right"  # Направление, куда смотрит босс
+
+        # Простая анимация покачивания для живости
+        self.animation_timer = 0
+        self.bob_offset = 0  # Для эффекта покачивания
+        self.summon_effect_timer = 0  # Для эффекта при призыве
 
         self.scale = 2
         self.speed = 100 + (power_level - 1) * 15  
-        self.facing = "right"
-        self.frames = self.load_frames(self.sheet_right)
-        self.summon_frames = self.load_frames(self.summon_right)
-        self.anim_index = 0
-        self.anim_timer = 0
-        self.anim_speed = 0.15
-
+        
         self.mode = "walk"
         
         self.summon_cooldown = max(1.5, 3.5 - (power_level - 1) * 0.4)
         self.summon_timer = 0
         
-       
         self.ghosts_per_summon = power_level
         self.max_ghosts_summoned = 15 + power_level * 5  
 
@@ -41,7 +58,6 @@ class BossPepe:
 
         self.running_away = False
         
-        
         if power_level > 3:
             self.has_hp = True
             self.max_hp = (power_level - 3) * 20
@@ -49,19 +65,16 @@ class BossPepe:
         else:
             self.has_hp = False
 
-        
         self.damage = 3 + power_level
 
         print(f"BossPepe spawned! Level: {power_level}, Speed: {self.speed}, Ghosts per summon: {self.ghosts_per_summon}")
 
-    def load_frames(self, sheet):
-        frame_w = sheet.get_width() // 10
-        frame_h = sheet.get_height()
-        return [
-            pygame.transform.scale(sheet.subsurface(pygame.Rect(i * frame_w, 0, frame_w, frame_h)),
-                                   (frame_w * self.scale, frame_h * self.scale))
-            for i in range(10)
-        ]
+    def update_current_image(self):
+        """Обновляет текущее изображение на основе направления"""
+        if self.facing == "right":
+            self.current_image = self.image_right
+        else:
+            self.current_image = self.image_left
 
     def take_damage(self, amount):
         """Урон боссу (только если у него есть HP)"""
@@ -76,24 +89,30 @@ class BossPepe:
         if not self.active:
             return
 
-        
+        # Простая анимация покачивания
+        self.animation_timer += dt
+        self.bob_offset = int(2 * math.sin(self.animation_timer * 3))
+
+        # Эффект мерцания при призыве
+        if self.summoning:
+            self.summon_effect_timer += dt
+        else:
+            self.summon_effect_timer = 0
+
+        # Проверяем условия для бегства
         if ((not self.has_hp and self.ghosts_killed >= self.max_ghosts_summoned) or 
             (self.has_hp and self.hp <= 0)):
             self.running_away = True
             self.mode = "run"
 
-        self.anim_timer += dt
-
-        if self.anim_timer >= self.anim_speed:
-            self.anim_timer = 0
-            self.anim_index = (self.anim_index + 1) % len(self.frames)
-
         if self.running_away:
-            
+            # Убегает вправо
             escape_speed = self.speed * 1.5
             self.rect.x += escape_speed * dt
+            self.facing = "right"  # Смотрит в сторону бегства
             if self.rect.x > 2000:
                 self.active = False
+            self.update_current_image()
             return
 
         self.summon_timer += dt
@@ -104,11 +123,10 @@ class BossPepe:
                 self.summoning = False
                 self.summon_time = 0
                 
-                
+                # Призываем призраков
                 for _ in range(self.ghosts_per_summon):
                     ghost_x = self.rect.centerx + random.randint(-80, 80)
                     ghost_y = self.rect.centery + random.randint(-80, 80)
-                    
                     
                     if self.power_level >= 3:
                         from tank_ghost import TankGhost
@@ -131,32 +149,58 @@ class BossPepe:
             target_distance = 120 + self.power_level * 10  
             
             if direction.length() > target_distance:
+                # Приближается к игроку
                 direction.normalize_ip()
                 self.rect.x += direction.x * self.speed * dt * 0.6
                 self.rect.y += direction.y * self.speed * dt * 0.6
-                self.facing = "right" if direction.x >= 0 else "left"
+                
+                # НОВОЕ: Поворачивается в сторону движения
+                if direction.x > 0:
+                    self.facing = "right"
+                else:
+                    self.facing = "left"
+                    
             elif direction.length() < target_distance - 20:
                 # Отходит если игрок слишком близко
                 direction.normalize_ip()
                 self.rect.x -= direction.x * self.speed * dt * 0.4
                 self.rect.y -= direction.y * self.speed * dt * 0.4
-                self.facing = "right" if direction.x >= 0 else "left"
+                
+                # НОВОЕ: Поворачивается лицом к игроку при отступлении
+                if direction.x > 0:
+                    self.facing = "right"
+                else:
+                    self.facing = "left"
                 
             # Атака в ближнем бою (редко)
             if direction.length() < 40 and random.random() < 0.01:  # 1% шанс каждый кадр
                 player.take_damage(self.damage)
 
+        # Обновляем текущее изображение
+        self.update_current_image()
+
     def draw(self, surface, camera_offset):
         if not self.active:
             return
             
-        if self.mode == "summon" or self.summoning:
-            frames = self.summon_frames if self.facing == "right" else self.load_frames(self.summon_left)
-        else:
-            frames = self.frames if self.facing == "right" else self.load_frames(self.sheet_left)
-            
-        frame = frames[self.anim_index % len(frames)]
-        surface.blit(frame, (self.rect.x - camera_offset.x, self.rect.y - camera_offset.y))
+        # Рисуем с эффектом покачивания
+        draw_x = self.rect.x - camera_offset.x
+        draw_y = self.rect.y - camera_offset.y + self.bob_offset
+        
+        current_image = self.current_image
+        
+        # Эффект мерцания при призыве
+        if self.summoning and self.summon_effect_timer > 0:
+            # Создаем мерцающий эффект
+            if int(self.summon_effect_timer * 10) % 2 == 0:  # Мерцание каждые 0.1 секунды
+                current_image = current_image.copy()
+                # Добавляем желтое свечение
+                glow_overlay = pygame.Surface(current_image.get_size())
+                glow_overlay.fill((255, 255, 100))
+                glow_overlay.set_alpha(80)
+                current_image.blit(glow_overlay, (0, 0), special_flags=pygame.BLEND_ADD)
+        
+        surface.blit(current_image, (draw_x, draw_y))
         
         # Отображаем HP если есть
         if self.has_hp and self.active:

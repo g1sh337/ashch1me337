@@ -32,8 +32,8 @@ Fork. Build. Break. Repeat.
 
 ## 🌐 Roadmap
 - [x] GitHub release  
-- [ ] Steam release prep  
-- [ ] Solana token utility  
+- [ ] Solana token utility 
+- [ ] Steam release prep    
 - [ ] Ghost boss: Pépé 🐸
 
 ---

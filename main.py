@@ -20,8 +20,10 @@ from config import config
 from menu import MainMenu  # Menu integration
 from high_score import HighScoreManager  # High score system
 from pause_menu import PauseMenu  # Pause menu system
+from upgrade_pill import UpgradePill  # НОВЫЙ ИМПОРТ
 import os
 import atexit
+import math
 
 def cleanup():
     """Cleanup on exit"""
@@ -507,6 +509,12 @@ def start_game_loop(screen, clock):
     mana_mushroom = None
     score = 0
 
+    # НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ УЛУЧШЕНИЙ
+    upgrade_pill = None
+    pill_spawn_timer = 0
+    pill_spawn_cooldown = 30  # Каждые 30 секунд появляется таблетка
+    pills_collected = 0  # Счетчик собранных таблеток
+
     running = True
     paused = False
     pause_menu = None  # NEW: Pause menu system
@@ -542,6 +550,49 @@ def start_game_loop(screen, clock):
                 level_text = "Level 3 Unlocked: Shield Spell!"
                 level_text_timer = 3
                 player_level.level_up()
+
+            # НОВЫЙ КОД: Периодический спавн таблеток
+            pill_spawn_timer += dt
+
+            # Спавним таблетку если игрок достиг 5 уровня и прошло достаточно времени
+            if (player_progression.level >= 5 and 
+                pill_spawn_timer >= pill_spawn_cooldown and 
+                (not upgrade_pill or not upgrade_pill.active)):
+                
+                # Случайная позиция около центра карты
+                center_x = bg_width // 2
+                center_y = bg_height // 2
+                
+                # Добавляем случайное смещение от центра
+                offset_x = random.randint(-300, 300)
+                offset_y = random.randint(-300, 300)
+                
+                # Убеждаемся что таблетка в пределах карты
+                pill_x = max(150, min(bg_width - 150, center_x + offset_x))
+                pill_y = max(150, min(bg_height - 150, center_y + offset_y))
+                
+                # Создаем таблетку
+                upgrade_pill = UpgradePill(pill_x, pill_y, "triple_shot")
+                pill_spawn_timer = 0  # Сброс таймера
+                
+                # Уменьшаем кулдаун с прогрессом (минимум 15 секунд)
+                pill_spawn_cooldown = max(15, 30 - wave_manager.wave_number)
+                
+                print(f"🌟 Triple Shot pill #{pills_collected + 1} spawned! Next in {pill_spawn_cooldown}s 🌟")
+
+            # Обновление таблетки
+            if upgrade_pill and upgrade_pill.active:
+                upgrade_pill.update(dt)
+                
+                # Проверка подбора таблетки
+                if player.rect.colliderect(upgrade_pill.rect):
+                    upgrade_pill.active = False
+                    upgrade_pill.collected = True
+                    
+                    if upgrade_pill.upgrade_type == "triple_shot":
+                        player.activate_triple_shot()
+                        pills_collected += 1
+                        print(f"💊 Pills collected: {pills_collected}")
 
             # Update systems
             boss_manager.update(dt, score, player, ghosts)
@@ -705,14 +756,37 @@ def start_game_loop(screen, clock):
                     elif event.key == pygame.K_F1:
                         config.SHOW_CONTROLS = not config.SHOW_CONTROLS
                     elif event.key == pygame.K_SPACE:
-                        direction = pygame.Vector2(1 if player.facing == "right" else -1, 0)
-                        fireballs.append(Fireball(player.rect.centerx, player.rect.centery, direction))
-                        player.start_shoot_animation(direction.x)
+                        # НОВЫЙ КОД: Тройная стрельба
+                        if player.has_triple_shot:
+                            # Тройная стрельба: вперед, диагональ вверх, диагональ вниз
+                            base_direction = 1 if player.facing == "right" else -1
+                            
+                            # Центральный снаряд (прямо)
+                            direction_center = pygame.Vector2(base_direction, 0)
+                            fireballs.append(Fireball(player.rect.centerx, player.rect.centery, direction_center))
+                            
+                            # Верхний диагональный снаряд
+                            direction_up = pygame.Vector2(base_direction, -0.5).normalize()
+                            fireballs.append(Fireball(player.rect.centerx, player.rect.centery, direction_up))
+                            
+                            # Нижний диагональный снаряд
+                            direction_down = pygame.Vector2(base_direction, 0.5).normalize()
+                            fireballs.append(Fireball(player.rect.centerx, player.rect.centery, direction_down))
+                            
+                            player.start_shoot_animation(base_direction)
+                        else:
+                            # Обычная стрельба
+                            direction = pygame.Vector2(1 if player.facing == "right" else -1, 0)
+                            fireballs.append(Fireball(player.rect.centerx, player.rect.centery, direction))
+                            player.start_shoot_animation(direction.x)
                     elif event.key == pygame.K_q and player_level.unlock_lightning and player.mana >= 20:
                         player.mana -= 20
-                        ghosts_hit = 0
+                        targets_hit = 0
+                        player_pos = pygame.Vector2(player.rect.center)
+                        
+                        # Урон по призракам
                         for ghost in ghosts[:]:
-                            dist = pygame.Vector2(ghost.rect.center) - pygame.Vector2(player.rect.center)
+                            dist = pygame.Vector2(ghost.rect.center) - player_pos
                             if dist.length() < 150:
                                 lightnings.append(LightningSpell(ghost.rect.centerx, ghost.rect.centery))
                                 ghost.hp = 0 if hasattr(ghost, 'hp') else None
@@ -721,8 +795,30 @@ def start_game_loop(screen, clock):
                                     score += 10
                                     player_progression.add_experience(15)
                                     boss_manager.notify_ghost_killed()
-                                    ghosts_hit += 1
-                        if ghosts_hit > 0:
+                                    targets_hit += 1
+                        
+                        # НОВЫЙ КОД: Урон по боссам
+                        # Проверяем Boss Pepe
+                        if boss_manager.boss_pepe and boss_manager.boss_pepe.active:
+                            boss_pos = pygame.Vector2(boss_manager.boss_pepe.rect.center)
+                            dist = boss_pos - player_pos
+                            if dist.length() < 150:
+                                lightnings.append(LightningSpell(boss_manager.boss_pepe.rect.centerx, boss_manager.boss_pepe.rect.centery))
+                                boss_manager.boss_pepe.take_damage(15)
+                                targets_hit += 1
+                                print("⚡ Lightning hit Boss Pepe!")
+                        
+                        # Проверяем Boss Strong
+                        if boss_manager.boss_strong and boss_manager.boss_strong.active:
+                            boss_pos = pygame.Vector2(boss_manager.boss_strong.rect.center)
+                            dist = boss_pos - player_pos
+                            if dist.length() < 150:
+                                lightnings.append(LightningSpell(boss_manager.boss_strong.rect.centerx, boss_manager.boss_strong.rect.centery))
+                                boss_manager.boss_strong.take_damage(15)
+                                targets_hit += 1
+                                print("⚡ Lightning hit Boss Strong!")
+                        
+                        if targets_hit > 0:
                             player.start_shoot_animation(1 if player.facing == "right" else -1)
                     elif event.key == pygame.K_1:
                         if inventory.use_item("hilka"):
@@ -764,6 +860,10 @@ def start_game_loop(screen, clock):
                 potion.draw(screen, camera_offset)
             if mana_mushroom and mana_mushroom.active:
                 mana_mushroom.draw(screen, camera_offset)
+            
+            # НОВЫЙ КОД: Рисуем таблетку улучшения
+            if upgrade_pill and upgrade_pill.active:
+                upgrade_pill.draw(screen, camera_offset)
         else:
             # Draw everything with darkening on pause
             player.draw(screen, camera_offset)
@@ -779,6 +879,10 @@ def start_game_loop(screen, clock):
                 potion.draw(screen, camera_offset)
             if mana_mushroom and mana_mushroom.active:
                 mana_mushroom.draw(screen, camera_offset)
+            
+            # Рисуем таблетку даже на паузе
+            if upgrade_pill and upgrade_pill.active:
+                upgrade_pill.draw(screen, camera_offset)
 
         interface.draw(screen, player)
         inventory.draw(screen)
@@ -786,6 +890,19 @@ def start_game_loop(screen, clock):
         # UI information
         score_text = font.render(f"{score}", True, (250, 235, 255))
         screen.blit(score_text, (140, 95))
+        
+        # Информация о таблетках
+        if player_progression.level >= 5:
+            if upgrade_pill and upgrade_pill.active:
+                pill_info_text = "💊 TRIPLE SHOT PILL AVAILABLE!"
+                pill_info_color = (255, 255, 0)
+            else:
+                next_pill_time = max(0, pill_spawn_cooldown - pill_spawn_timer)
+                pill_info_text = f"💊 Next pill in: {int(next_pill_time)}s"
+                pill_info_color = (200, 200, 200)
+            
+            pill_info_surface = font.render(pill_info_text, True, pill_info_color)
+            screen.blit(pill_info_surface, (20, 140))
         
         # Wave information
         if not paused:
