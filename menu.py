@@ -2,6 +2,14 @@
 import pygame
 import sys
 import os
+
+# Fix Windows console encoding for emoji support
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except:
+        pass
+
 from safe_loader import safe_load_image, safe_font
 from config import config
 

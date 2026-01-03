@@ -3,6 +3,13 @@ import pygame
 import json
 import random
 import sys
+
+# Fix Windows console encoding for emoji support
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except:
+        pass
 from player import Player
 from ghost import Ghost
 from fireball import Fireball
