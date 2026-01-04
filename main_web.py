@@ -757,5 +757,4 @@ async def main():
     config.save_settings()
     pygame.quit()
 
-# Pygbag entry point - runs automatically
-asyncio.run(main())
+# Pygbag automatically finds and runs async main() - DO NOT use asyncio.run()
