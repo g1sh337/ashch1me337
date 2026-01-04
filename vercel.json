@@ -1,7 +1,5 @@
 {
-  "buildCommand": "python build_for_vercel.py",
   "outputDirectory": ".",
-  "installCommand": "pip install pygbag pygame-ce",
   "framework": null,
   "routes": [
     {
