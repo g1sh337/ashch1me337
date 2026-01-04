@@ -709,14 +709,19 @@ async def start_game_loop(screen, clock):
 
 async def main():
     """Main function with menu - async version"""
+    print("=== PYGBAG: main() started ===")
     pygame.init()
+    print("=== PYGBAG: pygame initialized ===")
     
     SCREEN_WIDTH, SCREEN_HEIGHT = config.get_resolution()
+    print(f"=== PYGBAG: Resolution {SCREEN_WIDTH}x{SCREEN_HEIGHT} ===")
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), config.get_screen_mode())
     pygame.display.set_caption("The LEGEND of ASHCHIME")
     clock = pygame.time.Clock()
     
+    print("=== PYGBAG: Creating menu ===")
     menu = MainMenu(SCREEN_WIDTH, SCREEN_HEIGHT)
+    print("=== PYGBAG: Menu created, entering main loop ===")
     
     running = True
     while running:
@@ -752,5 +757,5 @@ async def main():
     config.save_settings()
     pygame.quit()
 
-# Pygbag entry point
+# Pygbag entry point - runs automatically
 asyncio.run(main())
