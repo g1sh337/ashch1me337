@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The LEGEND of ASHCHIME - Play Now</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        header {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 2px solid #00ffff;
+            box-shadow: 0 4px 20px rgba(0, 255, 255, 0.3);
+        }
+
+        nav {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 1.5em;
+            background: linear-gradient(45deg, #00ffff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            padding: 10px 20px;
+            border-radius: 5px;
+        }
+
+        .nav-links a:hover {
+            background: rgba(0, 255, 255, 0.1);
+            color: #00ffff;
+        }
+
+        .hero {
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 0 20px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 3em;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #00ffff, #ff00ff, #00ff00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        .hero p {
+            font-size: 1.2em;
+            color: #aaa;
+            margin-bottom: 40px;
+        }
+
+        .game-section {
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .game-wrapper {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 20px;
+            padding: 20px;
+            border: 3px solid #00ffff;
+            box-shadow: 0 0 40px rgba(0, 255, 255, 0.5);
+            position: relative;
+        }
+
+        .game-iframe {
+            width: 100%;
+            height: 850px;
+            border: none;
+            border-radius: 10px;
+            background: #000;
+        }
+
+        .controls {
+            max-width: 1400px;
+            margin: 60px auto;
+            padding: 40px 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 20px;
+        }
+
+        .controls h2 {
+            font-family: 'Press Start 2P', monospace;
+            text-align: center;
+            font-size: 2em;
+            margin-bottom: 30px;
+            color: #00ff00;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .control-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #00ffff;
+        }
+
+        .key {
+            display: inline-block;
+            background: #333;
+            padding: 8px 15px;
+            border-radius: 5px;
+            border: 2px solid #666;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.9em;
+            color: #00ffff;
+            margin-right: 10px;
+        }
+
+        footer {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 40px 20px;
+            text-align: center;
+            border-top: 2px solid #ff00ff;
+            margin-top: 60px;
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+            }
+            to {
+                text-shadow: 0 0 20px rgba(0, 255, 255, 0.8), 0 0 40px rgba(255, 0, 255, 0.8);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 1.8em;
+            }
+            .game-iframe {
+                height: 600px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">🧙‍♂️ ASHCHIME</div>
+            <ul class="nav-links">
+                <li><a href="#game">Play Now</a></li>
+                <li><a href="#controls">Controls</a></li>
+                <li><a href="https://github.com/g1sh337/ashch1me337" target="_blank">GitHub</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <h1>The LEGEND of ASHCHIME</h1>
+        <p>A pixel-art roguelite where a lonely wizard battles ghosts through endless waves</p>
+    </section>
+
+    <section id="game" class="game-section">
+        <div class="game-wrapper">
+            <iframe 
+                class="game-iframe" 
+                src="play.html"
+                allow="autoplay; fullscreen; cross-origin-isolated"
+                style="width: 100%; height: 850px; border: none; border-radius: 10px; background: #000;">
+            </iframe>
+        </div>
+    </section>
+
+    <section id="controls" class="controls">
+        <h2>🎮 Controls</h2>
+        <div class="controls-grid">
+            <div class="control-item">
+                <span class="key">WASD</span> / <span class="key">↑↓←→</span>
+                <p>Move wizard</p>
+            </div>
+            <div class="control-item">
+                <span class="key">SPACE</span>
+                <p>Fireball (10 mana)</p>
+            </div>
+            <div class="control-item">
+                <span class="key">Q</span>
+                <p>Lightning (25 mana)</p>
+            </div>
+            <div class="control-item">
+                <span class="key">E</span>
+                <p>Shield (cooldown 20s)</p>
+            </div>
+            <div class="control-item">
+                <span class="key">1</span> / <span class="key">2</span>
+                <p>Use potions</p>
+            </div>
+            <div class="control-item">
+                <span class="key">ESC</span>
+                <p>Pause menu</p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>© 2026 The LEGEND of ASHCHIME | Python + Pygame + Pygbag</p>
+        <p style="margin-top: 10px; color: #666;">Deployed on Vercel</p>
+    </footer>
+</body>
+</html>
